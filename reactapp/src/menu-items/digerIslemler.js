@@ -31,6 +31,27 @@ const digerIslemler = {
                     url: '/digerIslemler/musteri-ekle'
                 }
             ]
+        },
+        {
+            id: 'urunler',
+            title: 'Ürünler',
+            type: 'collapse',
+            icon: icons.IconCase,
+
+            children: [
+                {
+                    id: 'urunler',
+                    title: 'Ürün Listesi',
+                    type: 'item',
+                    url: '/digerIslemler/urunler'
+                },
+                {
+                    id: 'urun-ekle',
+                    title: 'Ürün Ekle',
+                    type: 'item',
+                    url: '/digerIslemler/urun-ekle'
+                }
+            ]
         }
     ]
 };
