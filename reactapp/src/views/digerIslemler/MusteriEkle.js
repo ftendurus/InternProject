@@ -115,7 +115,8 @@ function MusteriEkle() {
                 soyadi: musteriSoyadi,
                 telefonNumarasi: phone,
                 email: email,
-                firma: firma
+                firmaId: firma,
+                firmaAdi: firmaAdi
             });
 
             let config = {
