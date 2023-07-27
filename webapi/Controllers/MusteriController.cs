@@ -6,6 +6,7 @@ using webapi.Helper.Base;
 using webapi.ViewModel.General.Grid;
 using webapi.ViewModel;
 using webapi.ViewModel.Musteri;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -32,6 +33,8 @@ namespace webapi.Controllers
                 data.Soyadi = dataVM.Soyadi;
                 data.Email = dataVM.Email;
                 data.TelefonNumarasi = dataVM.TelefonNumarasi;
+                data.FirmaAdi = dataVM.FirmaAdi;
+                data.FirmaId = dataVM.FirmaId;
             }
             else
             {
@@ -41,6 +44,8 @@ namespace webapi.Controllers
                     Soyadi = dataVM.Soyadi,
                     Email = dataVM.Email,
                     TelefonNumarasi = dataVM.TelefonNumarasi,
+                    FirmaAdi = dataVM.FirmaAdi,
+                    FirmaId = dataVM.FirmaId,
                 };
                 if (_unitOfWork.Repository<Musteri>().Any(x => x == data))
                 {
@@ -83,6 +88,8 @@ namespace webapi.Controllers
                 Soyadi = x.Soyadi,
                 Email = x.Email,
                 TelefonNumarasi = x.TelefonNumarasi,
+                FirmaAdi = x.FirmaAdi,
+                FirmaId = x.FirmaId
             });
             var rest = query.ToDataListRequest(Request.ToRequestFilter());
 
@@ -99,7 +106,9 @@ namespace webapi.Controllers
                 Adi = musteri.Adi,
                 Soyadi= musteri.Soyadi,
                 Email = musteri.Email,
-                TelefonNumarasi = musteri.TelefonNumarasi
+                TelefonNumarasi = musteri.TelefonNumarasi,
+                FirmaAdi = musteri.FirmaAdi,
+                FirmaId = musteri.FirmaId
             };
             return new ApiResult<MusteriGridVM> { Data = musteriVM, Result = true };
         }

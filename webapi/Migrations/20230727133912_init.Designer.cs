@@ -11,7 +11,7 @@ using webapi.Data;
 namespace webapi.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20230711085843_init")]
+    [Migration("20230727133912_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -60,6 +60,44 @@ namespace webapi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("webapi.Entity.Firma", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Adi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Creator")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TelefonNumarasi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Updater")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Firma");
                 });
 
             modelBuilder.Entity("webapi.Entity.Log.ExceptionLog", b =>
@@ -115,6 +153,13 @@ namespace webapi.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("FirmaAdi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FirmaId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");

@@ -7,12 +7,10 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import AsyncSelect from 'react-select/async';
-import Select from 'react-select';
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
-function MusteriEkle() {
+function FirmaEkle() {
     const { id } = useParams();
 
     const [fetchingError, setFetchingError] = useState(false);
@@ -20,56 +18,24 @@ function MusteriEkle() {
     const [isUpdate, setIsUpdate] = useState(0);
     const [phone, setPhone] = React.useState('');
     const [phoneError, setPhoneError] = React.useState(false);
-    const [musteriAdi, setMusteriAdi] = useState('');
-    const [musteriSoyadi, setMusteriSoyadi] = useState('');
-    const [firma, setFirma] = useState(0);
-    const [firmaAdi, setFirmaAdi] = useState(0);
+    const [firmaAdi, setFirmaAdi] = useState('');
     const [email, setEmail] = useState('');
     const [emailError, setEmailError] = useState(false);
     const [validationErrors, setValidationErrors] = React.useState({});
-    const [loading, setLoading] = useState(true);
-    const [options, setOptions] = useState([]);
 
     useEffect(() => {
         console.log(id);
         if (typeof id !== 'undefined') {
             setIsUpdate(id);
             setIsFetching(true);
-            musteriGetirPromise();
+            firmaGetirPromise();
         } else {
             setEmail('');
             setPhone('');
-            setMusteriAdi('');
-            setMusteriSoyadi('');
-            setFirma('');
+            setFirmaAdi('');
             setIsFetching(false);
         }
     }, [id]);
-
-    useEffect(() => {
-        selectFirma();
-    }, []);
-
-    const selectFirma = async () => {
-        try {
-            const response = await axios.post('https://localhost:7002/api/Firma/GetComboGrid');
-            if (response.data && response.data.result) {
-                setOptions(response.data.data);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    const selectOptions = options.map((option) => ({
-        value: option.id,
-        label: option.adi
-    }));
-
-    function handleSelect(event) {
-        setFirma(event.value);
-        setFirmaAdi(options.find((option) => option.id == event.value).adi);
-    }
 
     const handleNumber = (value, info) => {
         setPhone(info.numberValue);
@@ -89,39 +55,37 @@ function MusteriEkle() {
         }
     };
 
-    const musteriEkle = () => {
+    const firmaEkle = () => {
         if (typeof id !== 'undefined') {
-            toast.promise(musteriEklePromise, {
-                pending: 'Müşteri güncelleniyor',
-                success: musteriAdi + ' ' + musteriSoyadi + ' başarıyla güncellendi 👌',
-                error: musteriAdi + ' ' + musteriSoyadi + ' güncellenirken hata oluştu 🤯'
+            toast.promise(firmaEklePromise, {
+                pending: 'Firma güncelleniyor',
+                success: firmaAdi + ' başarıyla güncellendi 👌',
+                error: firmaAdi + ' güncellenirken hata oluştu 🤯'
             });
         } else {
-            toast.promise(musteriEklePromise, {
-                pending: 'Müşteri kaydı yapılıyor',
-                success: musteriAdi + ' ' + musteriSoyadi + ' başarıyla eklendi 👌',
-                error: musteriAdi + ' ' + musteriSoyadi + ' eklenirken hata oluştu 🤯'
+            toast.promise(firmaEklePromise, {
+                pending: 'Firma kaydı yapılıyor',
+                success: firmaAdi + ' başarıyla eklendi 👌',
+                error: firmaAdi + ' eklenirken hata oluştu 🤯'
             });
         }
     };
 
-    const musteriEklePromise = () => {
+    const firmaEklePromise = () => {
         return new Promise(async (resolve, reject) => {
             const start = Date.now();
             setValidationErrors({});
             let data = JSON.stringify({
                 id: typeof id !== 'undefined' ? id : 0,
-                adi: musteriAdi,
-                soyadi: musteriSoyadi,
+                adi: firmaAdi,
                 telefonNumarasi: phone,
-                email: email,
-                firma: firma
+                email: email
             });
 
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Musteri/CreateOrUpdate',
+                url: 'http://localhost:5273/api/Firma/CreateOrUpdate',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'text/plain'
@@ -151,14 +115,14 @@ function MusteriEkle() {
         });
     };
 
-    const musteriGetirPromise = () => {
+    const firmaGetirPromise = () => {
         return new Promise(async (resolve, reject) => {
             const start = Date.now();
             setValidationErrors({});
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Musteri/Get',
+                url: 'http://localhost:5273/api/Firma/Get',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'text/plain'
@@ -178,12 +142,9 @@ function MusteriEkle() {
                             await sleep(500 - millis);
                         }
                         console.log(response.data);
-                        setMusteriAdi(response.data.data.adi);
-                        setMusteriSoyadi(response.data.data.soyadi);
+                        setFirmaAdi(response.data.data.adi);
                         setEmail(response.data.data.email);
                         setPhone(response.data.data.telefonNumarasi);
-                        setFirma(response.data.data.firmaId);
-                        setFirmaAdi(response.data.data.firmaAdi);
                         setFetchingError(false);
                         resolve(response.data); // Başarılı sonuç d1urumunda Promise'ı çöz
                     } else {
@@ -202,39 +163,6 @@ function MusteriEkle() {
         });
     };
 
-    const customStyles = {
-        control: (provided, state) => ({
-            ...provided,
-            borderRadius: '12px', // Yuvarlak kenarları
-            minHeight: '50px', // Daha uzun alan
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Gölge efekti
-            borderColor: state.isFocused ? '#007bff' : '#d4d4d4', // Kenarlık rengi
-            ':hover': {
-                borderColor: state.isFocused ? '#007bff' : '#d4d4d4' // Seçim alanına gelindiğinde kenarlık rengi
-            }
-        }),
-        option: (provided, state) => ({
-            ...provided,
-            borderRadius: '12px', // Yuvarlak kenarları
-            padding: '12px', // Daha uzun alan
-            color: state.isSelected ? 'white' : 'black', // Seçili seçeneklerin metnini beyaz yapar
-            backgroundColor: state.isSelected ? '#007bff' : 'white', // Seçili seçeneklerin arkaplan rengini mavi yapar
-            ':hover': {
-                backgroundColor: state.isSelected ? '#007bff' : '#f0f0f0' // Seçili olmayan seçeneklerin üzerine gelindiğinde arkaplan rengi
-            }
-        }),
-        dropdownIndicator: (provided) => ({
-            ...provided,
-            color: '#007bff', // Seçme oku rengi
-            ':hover': {
-                color: '#007bff' // Seçme okuna gelindiğinde rengi
-            }
-        }),
-        indicatorSeparator: () => ({
-            display: 'none' // Seçme oku ayırıcısını gizler
-        })
-    };
-
     return (
         <>
             <Container className="d-flex justify-content-center" maxWidth="md">
@@ -244,24 +172,14 @@ function MusteriEkle() {
                         {(isUpdate === 0 || !isFetching) && (
                             <>
                                 <TextField
-                                    value={musteriAdi}
+                                    value={firmaAdi}
                                     margin="normal"
                                     id="name"
-                                    label="Müşteri Adı"
+                                    label="Firma Adı"
                                     variant="outlined"
-                                    onChange={(e) => setMusteriAdi(e.target.value)}
+                                    onChange={(e) => setFirmaAdi(e.target.value)}
                                     error={!!validationErrors.Adi} // Hatanın varlığına göre error özelliğini ayarla
                                     helperText={validationErrors.Adi} // Hata mesajını helperText olarak göster
-                                />
-                                <TextField
-                                    margin="normal"
-                                    value={musteriSoyadi}
-                                    id="surname"
-                                    label="Müşteri Soyadı"
-                                    variant="outlined"
-                                    onChange={(e) => setMusteriSoyadi(e.target.value)}
-                                    error={!!validationErrors.Soyadi}
-                                    helperText={validationErrors.Soyadi}
                                 />
                                 <TextField
                                     error={emailError || !!validationErrors.Email}
@@ -288,17 +206,7 @@ function MusteriEkle() {
                                     focusOnSelectCountry
                                     forceCallingCode
                                 />
-                                <div style={{ marginTop: '16px', marginBottom: '20px' }}>
-                                    <Select
-                                        options={selectOptions}
-                                        defaultValue={firma}
-                                        onChange={handleSelect}
-                                        placeholder={'Firma seciniz...'}
-                                        styles={customStyles}
-                                    />
-                                </div>
-
-                                <Button onClick={musteriEkle} className="mb-2" margin="normal" variant="contained">
+                                <Button onClick={firmaEkle} className="mb-2" margin="normal" variant="contained">
                                     Kaydet
                                 </Button>
                             </>
@@ -310,4 +218,4 @@ function MusteriEkle() {
     );
 }
 
-export default MusteriEkle;
+export default FirmaEkle;

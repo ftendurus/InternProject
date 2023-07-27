@@ -7,19 +7,11 @@ import axios from 'axios';
 import { Edit as EditIcon, Delete as DeleteIcon, Email as EmailIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 
 const Example = () => {
     const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
     const navigate = useNavigate();
 
-    const [id, setId] = useState([]);
-
-    const [firmaData, setFirmaData] = useState([]);
-    const [phone, setPhone] = useState();
-    const [email, setEmail] = useState();
-    const [firma, setFirma] = useState();
     const [columnFilters, setColumnFilters] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [sorting, setSorting] = useState([]);
@@ -40,7 +32,7 @@ const Example = () => {
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Musteri/GetGrid',
+                url: 'http://localhost:5273/api/Firma/GetGrid',
                 data: data
             };
 
@@ -52,42 +44,16 @@ const Example = () => {
                 .catch((error) => {
                     console.log(error);
                 });
-            setId(responseData.id);
             return responseData;
         },
         keepPreviousData: true
     });
-
-    useEffect(() => {
-        firmaCek();
-    }, []);
-
-    const firmaCek = async () => {
-        try {
-            const response = await axios.post('https://localhost:7002/api/Firma/GetComboGrid/');
-            const firmalar = response.data.data; // Firma verilerini içeren dizi
-            // Firma adlarını içeren bir dizi oluşturmak için map fonksiyonu kullanılıyor
-            const firmaAdlari = firmalar.map((firma) => firma.adi);
-            setFirmaData(firmaAdlari); // Firma adlarını içeren diziyi state'e kaydediyoruz
-            console.log(firmaAdlari);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
 
     const columns = useMemo(
         () => [
             {
                 accessorKey: 'adi',
                 header: 'İsim'
-            },
-            {
-                accessorKey: 'soyadi',
-                header: 'Soyisim'
-            },
-            {
-                accessorKey: 'firmaAdi',
-                header: 'Firma'
             },
             {
                 accessorKey: 'telefonNumarasi',
@@ -103,9 +69,9 @@ const Example = () => {
 
     const deleteById = (id) => {
         toast.promise(deletePromise(id), {
-            pending: 'Müşteri siliniyor.',
-            success: 'Müşteri başarıyla silindi 👌',
-            error: 'Müşteri silinirken hata oluştu 🤯'
+            pending: 'Firma siliniyor.',
+            success: 'Firma başarıyla silindi 👌',
+            error: 'Firma silinirken hata oluştu 🤯'
         });
     };
 
@@ -116,7 +82,7 @@ const Example = () => {
             let config = {
                 method: 'get',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Musteri/Delete',
+                url: 'http://localhost:5273/api/Firma/Delete',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'text/plain'
@@ -165,7 +131,7 @@ const Example = () => {
                         <IconButton
                             color="secondary"
                             onClick={() => {
-                                navigate(`/digerIslemler/musteri-duzenle/${row.original.id}`);
+                                navigate(`/digerIslemler/firma-duzenle/${row.original.id}`);
                             }}
                         >
                             <EditIcon />

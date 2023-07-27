@@ -1,4 +1,7 @@
-﻿namespace webapi.ViewModel.Musteri
+﻿using webapi.Entity;
+
+
+namespace webapi.ViewModel.Musteri
 {
     public class MusteriGridVM
     {
@@ -7,5 +10,8 @@
         public string Soyadi { get; set; }
         public string TelefonNumarasi { get; set; }
         public string Email { get; set; }
+        public int FirmaId { get; set; }
+        public string FirmaAdi { get; set; }
+
     }
 }

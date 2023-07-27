@@ -9,6 +9,10 @@ namespace webapi.Data
         public DbSet<Entity.Customer> Customers { get; set; }
         public DbSet<ExceptionLog> ExceptionLog { get; set; }
         public DbSet<Musteri> Musteri { get; set; }
+        public DbSet<Firma> Firma { get; set; }
+
+
+
 
         public string DbPath { get; }
 

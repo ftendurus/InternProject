@@ -33,23 +33,23 @@ const digerIslemler = {
             ]
         },
         {
-            id: 'urunler',
-            title: 'Ürünler',
+            id: 'firmalar',
+            title: 'Firmalar',
             type: 'collapse',
             icon: icons.IconCase,
 
             children: [
                 {
-                    id: 'urunler',
-                    title: 'Ürün Listesi',
+                    id: 'firmalar',
+                    title: 'Firma Listesi',
                     type: 'item',
-                    url: '/digerIslemler/urunler'
+                    url: '/digerIslemler/firmalar'
                 },
                 {
-                    id: 'urun-ekle',
-                    title: 'Ürün Ekle',
+                    id: 'firma-ekle',
+                    title: 'Firma Ekle',
                     type: 'item',
-                    url: '/digerIslemler/urun-ekle'
+                    url: '/digerIslemler/firma-ekle'
                 }
             ]
         }
