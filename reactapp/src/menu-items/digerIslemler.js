@@ -52,6 +52,48 @@ const digerIslemler = {
                     url: '/digerIslemler/firma-ekle'
                 }
             ]
+        },
+        {
+            id: 'ustKategori',
+            title: 'Üst Kategori',
+            type: 'collapse',
+            icon: icons.IconCase,
+
+            children: [
+                {
+                    id: 'ustKategoriler',
+                    title: 'Üst Kategori Listesi',
+                    type: 'item',
+                    url: '/digerIslemler/ustKategoriler'
+                },
+                {
+                    id: 'ustKategori-ekle',
+                    title: 'Üst Kategori Ekle',
+                    type: 'item',
+                    url: '/digerIslemler/ustKategori-ekle'
+                }
+            ]
+        },
+        {
+            id: 'altKategori',
+            title: 'Alt Kategori',
+            type: 'collapse',
+            icon: icons.IconCase,
+
+            children: [
+                {
+                    id: 'altKategoriler',
+                    title: 'Alt Kategori Listesi',
+                    type: 'item',
+                    url: '/digerIslemler/altKategoriler'
+                },
+                {
+                    id: 'altKategori-ekle',
+                    title: 'Alt Kategori Ekle',
+                    type: 'item',
+                    url: '/digerIslemler/altKategori-ekle'
+                }
+            ]
         }
     ]
 };

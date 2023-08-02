@@ -14,6 +14,10 @@ const Products = Loadable(lazy(() => import('views/digerIslemler/product-list'))
 const ProductAdd = Loadable(lazy(() => import('views/digerIslemler/product-add')));
 const Firmalar = Loadable(lazy(() => import('views/digerIslemler/FirmaListesi')));
 const FirmaEkle = Loadable(lazy(() => import('views/digerIslemler/FirmaEkle')));
+const UstKategoriler = Loadable(lazy(() => import('views/digerIslemler/UstKategoriListesi')));
+const UstKategoriEkle = Loadable(lazy(() => import('views/digerIslemler/UstKategoriEkle')));
+const AltKategoriler = Loadable(lazy(() => import('views/digerIslemler/AltKategoriListesi')));
+const AltKategoriEkle = Loadable(lazy(() => import('views/digerIslemler/AltKategoriEkle')));
 
 // utilities routing
 const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
@@ -124,6 +128,30 @@ const MainRoutes = {
                 {
                     path: 'firma-duzenle/:id',
                     element: <FirmaEkle />
+                },
+                {
+                    path: 'ustKategoriler',
+                    element: <UstKategoriler />
+                },
+                {
+                    path: 'ustKategori-ekle',
+                    element: <UstKategoriEkle />
+                },
+                {
+                    path: 'ustKategori-duzenle/:id',
+                    element: <UstKategoriEkle />
+                },
+                {
+                    path: 'altKategoriler',
+                    element: <AltKategoriler />
+                },
+                {
+                    path: 'altKategori-ekle',
+                    element: <AltKategoriEkle />
+                },
+                {
+                    path: 'altKategori-duzenle/:id',
+                    element: <AltKategoriEkle />
                 }
             ]
         }

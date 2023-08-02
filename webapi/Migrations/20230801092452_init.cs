@@ -12,6 +12,26 @@ namespace webapi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AltKategori",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Adi = table.Column<string>(type: "TEXT", nullable: false),
+                    UstKategoriId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UstKategoriAdi = table.Column<string>(type: "TEXT", nullable: false),
+                    Creator = table.Column<int>(type: "INTEGER", nullable: true),
+                    Updater = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AltKategori", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
                 {
@@ -92,11 +112,32 @@ namespace webapi.Migrations
                 {
                     table.PrimaryKey("PK_Musteri", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "UstKategori",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Adi = table.Column<string>(type: "TEXT", nullable: false),
+                    Creator = table.Column<int>(type: "INTEGER", nullable: true),
+                    Updater = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UstKategori", x => x.Id);
+                });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AltKategori");
+
             migrationBuilder.DropTable(
                 name: "Customers");
 
@@ -108,6 +149,9 @@ namespace webapi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Musteri");
+
+            migrationBuilder.DropTable(
+                name: "UstKategori");
         }
     }
 }

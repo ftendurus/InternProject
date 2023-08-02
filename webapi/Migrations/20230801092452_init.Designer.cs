@@ -11,7 +11,7 @@ using webapi.Data;
 namespace webapi.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    [Migration("20230727133912_init")]
+    [Migration("20230801092452_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -19,6 +19,43 @@ namespace webapi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.7");
+
+            modelBuilder.Entity("webapi.Entity.AltKategori", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Adi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Creator")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Updater")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UstKategoriAdi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UstKategoriId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AltKategori");
+                });
 
             modelBuilder.Entity("webapi.Entity.Customer", b =>
                 {
@@ -181,6 +218,36 @@ namespace webapi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Musteri");
+                });
+
+            modelBuilder.Entity("webapi.Entity.UstKategori", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Adi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Creator")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Updater")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UstKategori");
                 });
 #pragma warning restore 612, 618
         }

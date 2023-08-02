@@ -11,20 +11,15 @@ import Select from 'react-select';
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
-function MusteriEkle() {
+function AltKategoriEkle() {
     const { id } = useParams();
 
     const [fetchingError, setFetchingError] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
     const [isUpdate, setIsUpdate] = useState(0);
-    const [phone, setPhone] = React.useState('');
-    const [phoneError, setPhoneError] = React.useState(false);
-    const [musteriAdi, setMusteriAdi] = useState('');
-    const [musteriSoyadi, setMusteriSoyadi] = useState('');
-    const [firma, setFirma] = useState(0);
-    const [firmaAdi, setFirmaAdi] = useState(0);
-    const [email, setEmail] = useState('');
-    const [emailError, setEmailError] = useState(false);
+    const [AltKategoriAdi, setAltKategoriAdi] = useState('');
+    const [UstKategori, setUstKategori] = useState(0);
+    const [UstKategoriAdi, setUstKategoriAdi] = useState(0);
     const [validationErrors, setValidationErrors] = React.useState({});
     const [loading, setLoading] = useState(true);
     const [options, setOptions] = useState([]);
@@ -34,24 +29,21 @@ function MusteriEkle() {
         if (typeof id !== 'undefined') {
             setIsUpdate(id);
             setIsFetching(true);
-            musteriGetirPromise();
+            AltKategoriGetirPromise();
         } else {
-            setEmail('');
-            setPhone('');
-            setMusteriAdi('');
-            setMusteriSoyadi('');
-            setFirma('');
+            setAltKategoriAdi('');
+            setUstKategori('');
             setIsFetching(false);
         }
     }, [id]);
 
     useEffect(() => {
-        selectFirma();
+        selectUstKategori();
     }, []);
 
-    const selectFirma = async () => {
+    const selectUstKategori = async () => {
         try {
-            const response = await axios.post('https://localhost:7002/api/Firma/GetComboGrid');
+            const response = await axios.post('https://localhost:7002/api/UstKategori/GetComboGrid');
             if (response.data && response.data.result) {
                 setOptions(response.data.data);
             }
@@ -66,62 +58,41 @@ function MusteriEkle() {
     }));
 
     function handleSelect(event) {
-        setFirma(event.value);
-        setFirmaAdi(options.find((option) => option.id == event.value).adi);
+        setUstKategori(event.value);
+        setUstKategoriAdi(options.find((option) => option.id == event.value).adi);
     }
 
-    const handleNumber = (value, info) => {
-        setPhone(info.numberValue);
-        if (matchIsValidTel(value) || info.nationalNumber === '') {
-            setPhoneError(false);
-        } else {
-            setPhoneError(true);
-        }
-    };
-
-    const handleEmail = (email) => {
-        setEmail(email.target.value);
-        if (validator.isEmail(email.target.value) || email.target.value === '') {
-            setEmailError(false);
-        } else {
-            setEmailError(true);
-        }
-    };
-
-    const musteriEkle = () => {
+    const AltKategoriEkle = () => {
         if (typeof id !== 'undefined') {
-            toast.promise(musteriEklePromise, {
+            toast.promise(AltKategoriEklePromise, {
                 pending: 'Müşteri güncelleniyor',
-                success: musteriAdi + ' ' + musteriSoyadi + ' başarıyla güncellendi 👌',
-                error: musteriAdi + ' ' + musteriSoyadi + ' güncellenirken hata oluştu 🤯'
+                success: AltKategoriAdi + ' başarıyla güncellendi 👌',
+                error: AltKategoriAdi + ' güncellenirken hata oluştu 🤯'
             });
         } else {
-            toast.promise(musteriEklePromise, {
+            toast.promise(AltKategoriEklePromise, {
                 pending: 'Müşteri kaydı yapılıyor',
-                success: musteriAdi + ' ' + musteriSoyadi + ' başarıyla eklendi 👌',
-                error: musteriAdi + ' ' + musteriSoyadi + ' eklenirken hata oluştu 🤯'
+                success: AltKategoriAdi + ' başarıyla eklendi 👌',
+                error: AltKategoriAdi + ' eklenirken hata oluştu 🤯'
             });
         }
     };
 
-    const musteriEklePromise = () => {
+    const AltKategoriEklePromise = () => {
         return new Promise(async (resolve, reject) => {
             const start = Date.now();
             setValidationErrors({});
             let data = JSON.stringify({
                 id: typeof id !== 'undefined' ? id : 0,
-                adi: musteriAdi,
-                soyadi: musteriSoyadi,
-                telefonNumarasi: phone,
-                email: email,
-                firmaId: firma,
-                firmaAdi: firmaAdi
+                adi: AltKategoriAdi,
+                UstKategoriId: UstKategori,
+                UstKategoriAdi: UstKategoriAdi
             });
 
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Musteri/CreateOrUpdate',
+                url: 'http://localhost:5273/api/AltKategori/CreateOrUpdate',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'text/plain'
@@ -151,14 +122,14 @@ function MusteriEkle() {
         });
     };
 
-    const musteriGetirPromise = () => {
+    const AltKategoriGetirPromise = () => {
         return new Promise(async (resolve, reject) => {
             const start = Date.now();
             setValidationErrors({});
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Musteri/Get',
+                url: 'http://localhost:5273/api/AltKategori/Get',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'text/plain'
@@ -178,12 +149,9 @@ function MusteriEkle() {
                             await sleep(500 - millis);
                         }
                         console.log(response.data);
-                        setMusteriAdi(response.data.data.adi);
-                        setMusteriSoyadi(response.data.data.soyadi);
-                        setEmail(response.data.data.email);
-                        setPhone(response.data.data.telefonNumarasi);
-                        setFirma(response.data.data.firmaId);
-                        setFirmaAdi(response.data.data.firmaAdi);
+                        setAltKategoriAdi(response.data.data.adi);
+                        setUstKategori(response.data.data.UstKategoriId);
+                        setUstKategoriAdi(response.data.data.UstKategoriAdi);
                         setFetchingError(false);
                         resolve(response.data); // Başarılı sonuç d1urumunda Promise'ı çöz
                     } else {
@@ -244,61 +212,26 @@ function MusteriEkle() {
                         {(isUpdate === 0 || !isFetching) && (
                             <>
                                 <TextField
-                                    value={musteriAdi}
+                                    value={AltKategoriAdi}
                                     margin="normal"
                                     id="name"
-                                    label="Müşteri Adı"
+                                    label="Alt Kategori Adı"
                                     variant="outlined"
-                                    onChange={(e) => setMusteriAdi(e.target.value)}
+                                    onChange={(e) => setAltKategoriAdi(e.target.value)}
                                     error={!!validationErrors.Adi} // Hatanın varlığına göre error özelliğini ayarla
                                     helperText={validationErrors.Adi} // Hata mesajını helperText olarak göster
-                                />
-                                <TextField
-                                    margin="normal"
-                                    value={musteriSoyadi}
-                                    id="surname"
-                                    label="Müşteri Soyadı"
-                                    variant="outlined"
-                                    onChange={(e) => setMusteriSoyadi(e.target.value)}
-                                    error={!!validationErrors.Soyadi}
-                                    helperText={validationErrors.Soyadi}
-                                />
-                                <TextField
-                                    error={emailError || !!validationErrors.Email}
-                                    helperText={emailError ? 'Email adresini kontrol edin' : validationErrors.Email} // emailError true ise kendi mesajını göster, aksi halde validationErrors'tan gelen mesajı göster
-                                    type="email"
-                                    margin="normal"
-                                    id="e-mail"
-                                    label="Email"
-                                    variant="outlined"
-                                    value={email}
-                                    onChange={(e) => handleEmail(e)}
-                                />
-                                <MuiTelInput
-                                    error={phoneError || !!validationErrors.TelefonNumarasi}
-                                    helperText={phoneError ? 'Telefon numarasını kontrol edin' : validationErrors.TelefonNumarasi}
-                                    defaultCountry="TR"
-                                    preferredCountries={['TR']}
-                                    variant="outlined"
-                                    margin="normal"
-                                    label="Telefon Numarası"
-                                    value={phone}
-                                    onChange={(value, info) => handleNumber(value, info)}
-                                    id="phone-number"
-                                    focusOnSelectCountry
-                                    forceCallingCode
                                 />
                                 <div style={{ marginTop: '16px', marginBottom: '20px' }}>
                                     <Select
                                         options={selectOptions}
-                                        defaultValue={firma}
+                                        defaultValue={UstKategori}
                                         onChange={handleSelect}
-                                        placeholder={'Firma seciniz...'}
+                                        placeholder={'UstKategori seciniz...'}
                                         styles={customStyles}
                                     />
                                 </div>
 
-                                <Button onClick={musteriEkle} className="mb-2" margin="normal" variant="contained">
+                                <Button onClick={AltKategoriEkle} className="mb-2" margin="normal" variant="contained">
                                     Kaydet
                                 </Button>
                             </>
@@ -310,4 +243,4 @@ function MusteriEkle() {
     );
 }
 
-export default MusteriEkle;
+export default AltKategoriEkle;
