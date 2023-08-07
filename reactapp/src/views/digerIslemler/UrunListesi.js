@@ -1,18 +1,30 @@
 import { useMemo, useState } from 'react';
 import MaterialReactTable from 'material-react-table';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { Edit as EditIcon, Delete as DeleteIcon, Email as EmailIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon, Email as EmailIcon, PictureInPicture as PictureIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { IconPictureInPicture } from '@tabler/icons';
 
 const Example = () => {
     const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
     const navigate = useNavigate();
+    const icons = { IconPictureInPicture };
 
-    const [musteriElements, setMusteriElements] = useState({});
+    const [id, setId] = useState([]);
+
+    const [altKategoriData, setAltKategoriData] = useState([]);
+    const [description, setDescription] = useState();
+    const [price, setPrice] = useState();
+    const [kategoriAdi, setKategoriAdi] = useState();
+    const [quantity, setQuantity] = useState();
+    const [imageName, setImageName] = useState();
+    const [imageSrc, setImageSrc] = useState();
     const [columnFilters, setColumnFilters] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [sorting, setSorting] = useState([]);
@@ -33,7 +45,7 @@ const Example = () => {
             let config = {
                 method: 'post',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Firma/GetGrid',
+                url: 'http://localhost:5273/api/Urun/GetGrid',
                 data: data
             };
 
@@ -50,23 +62,123 @@ const Example = () => {
         keepPreviousData: true
     });
 
+    useEffect(() => {
+        altKategoriCek();
+    }, []);
+
+    const altKategoriCek = async () => {
+        try {
+            const response = await axios.post('https://localhost:7002/api/AltKategori/GetComboGrid/');
+            const altKategoriler = response.data.data; // Firma verilerini içeren dizi
+            // Firma adlarını içeren bir dizi oluşturmak için map fonksiyonu kullanılıyor
+            const altKategoriAdlari = altKategoriler.map((firma) => firma.adi);
+            setAltKategoriData(altKategoriAdlari); // Firma adlarını içeren diziyi state'e kaydediyoruz
+            console.log(altKategoriAdlari);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    const getImage = async (imageName) => {
+        try {
+            const response = await axios.get(`https://localhost:7002/api/Urun/GetImage?imageName=${imageName}`, {
+                responseType: 'blob' // Binary olarak cevap alıyoruz
+            });
+
+            // Eğer istediğiniz gibi kullanmak isterseniz, dönen blob verisini kullanabilirsiniz
+            const blob = response.data;
+            // Örnek olarak blob'u bir <img> etiketi içerisinde görüntülemek için aşağıdaki gibi kullanabilirsiniz
+            // const imageUrl = URL.createObjectURL(blob);
+            // <img src={imageUrl} alt="Resim" />
+
+            return blob;
+        } catch (error) {
+            console.error('Image fetching error:', error);
+            throw error;
+        }
+    };
+
+    const fetchAndSetImage = async (imageName) => {
+        try {
+            const blob = await getImage(imageName);
+            const imageUrl = URL.createObjectURL(blob);
+            setImageSrc(imageUrl);
+            openImageInNewWindow(imageUrl);
+        } catch (error) {
+            console.error('Error fetching image:', error);
+        }
+    };
+
+    const openImageInNewWindow = (imageUrl) => {
+        const newWindow = window.open('', '_blank');
+        newWindow.document.write(`<img src="${imageUrl}" alt="Görüntü">`);
+    };
+
     const columns = useMemo(
         () => [
             {
                 accessorKey: 'id',
-                header: 'ID'
+                header: 'Ürün ID'
             },
             {
                 accessorKey: 'adi',
-                header: 'İsim'
+                header: 'Ürün Adı'
             },
             {
-                accessorKey: 'telefonNumarasi',
-                header: 'Telefon Numarası'
+                accessorKey: 'description',
+                header: 'Açıklama'
             },
             {
-                accessorKey: 'email',
-                header: 'Email Adresi'
+                accessorKey: 'kategoriAdi',
+                header: 'Kategori'
+            },
+            {
+                accessorKey: 'price',
+                header: 'Fiyat'
+            },
+            {
+                accessorKey: 'quantity',
+                header: 'Stok'
+            },
+            {
+                accessorKey: 'imageName',
+                header: 'Gorsel',
+                Cell: ({ row }) => {
+                    const fetchAndSetImage = async (imageName) => {
+                        try {
+                            const blob = await getImage(imageName);
+                            const imageUrl = URL.createObjectURL(blob);
+                            setImageSrc(imageUrl);
+                            openImageInPopup(imageUrl);
+                        } catch (error) {
+                            console.error('Error fetching image:', error);
+                        }
+                    };
+
+                    const openImageInPopup = (imageUrl) => {
+                        const newWindow = window.open('', '_blank', 'width=800,height=600');
+                        newWindow.document.write(`<img src="${imageUrl}" alt="Görüntü">`);
+                    };
+
+                    return (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem'
+                            }}
+                        >
+                            <IconButton
+                                color="secondary"
+                                onClick={() => {
+                                    fetchAndSetImage(row.original.imageName);
+                                }}
+                            >
+                                <PictureIcon />
+                            </IconButton>
+                        </Box>
+                    );
+                }
             }
         ],
         []
@@ -74,9 +186,9 @@ const Example = () => {
 
     const deleteById = (id) => {
         toast.promise(deletePromise(id), {
-            pending: 'Firma siliniyor.',
-            success: 'Firma başarıyla silindi 👌',
-            error: 'Firma silinirken hata oluştu 🤯'
+            pending: 'Ürün siliniyor.',
+            success: 'Ürün başarıyla silindi 👌',
+            error: 'Ürün silinirken hata oluştu 🤯'
         });
     };
 
@@ -87,7 +199,7 @@ const Example = () => {
             let config = {
                 method: 'get',
                 maxBodyLength: Infinity,
-                url: 'http://localhost:5273/api/Firma/Delete',
+                url: 'http://localhost:5273/api/Urun/Delete',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'text/plain'
@@ -119,31 +231,6 @@ const Example = () => {
         });
     };
 
-    const musteriCek = async (id) => {
-        try {
-            const response = await axios.post(`https://localhost:7002/api/Musteri/GetByFirmaId?firmaId=${id}`);
-            const musteri = response.data.data; // FirmaAdlari verilerini içeren dizi
-            return musteri; // Alt kategorileri döndür
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            return []; // Hata durumunda boş dizi döndür
-        }
-    };
-
-    const renderMusteriler = async (row) => {
-        try {
-            if (!musteriElements[row.original.id]) {
-                const musteri = await musteriCek(row.original.id);
-                setMusteriElements((prevState) => ({
-                    ...prevState,
-                    [row.original.id]: musteri
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
     return (
         <>
             <MaterialReactTable
@@ -155,13 +242,10 @@ const Example = () => {
                 }}
                 renderRowActions={({ row }) => (
                     <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
-                        <IconButton color="primary" onClick={() => window.open('mailto:' + row.original.email)}>
-                            <EmailIcon />
-                        </IconButton>
                         <IconButton
                             color="secondary"
                             onClick={() => {
-                                navigate(`/digerIslemler/firma-duzenle/${row.original.id}`);
+                                navigate(`/digerIslemler/urun-duzenle/${row.original.id}`);
                             }}
                         >
                             <EditIcon />
@@ -207,38 +291,6 @@ const Example = () => {
                     showAlertBanner: isError,
                     showProgressBars: isFetching,
                     sorting
-                }}
-                renderDetailPanel={({ row }) => {
-                    renderMusteriler(row); // renderAltKategoriler fonksiyonunu çağırın
-                    const musteriler = musteriElements[row.original.id] || [];
-
-                    return (
-                        <Box
-                            sx={{
-                                display: 'grid',
-                                margin: 'auto',
-                                gridTemplateColumns: '1fr 1fr',
-                                width: '100%',
-                                gap: '16px'
-                            }}
-                        >
-                            <Typography variant="subtitle1">Firma Adı: {row.original.adi}</Typography>
-                            <Box>
-                                <Typography variant="h6">Musteriler</Typography>
-                                <ul>
-                                    {musteriler.length > 0 ? (
-                                        musteriler.map((musteri) => (
-                                            <li key={musteri.id}>
-                                                (ID: {musteri.id}) {musteri.adi}
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <Typography variant="body2">Musteri Bulunamadı.</Typography>
-                                    )}
-                                </ul>
-                            </Box>
-                        </Box>
-                    );
                 }}
             />
         </>

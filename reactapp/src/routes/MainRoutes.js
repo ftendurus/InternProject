@@ -18,6 +18,9 @@ const UstKategoriler = Loadable(lazy(() => import('views/digerIslemler/UstKatego
 const UstKategoriEkle = Loadable(lazy(() => import('views/digerIslemler/UstKategoriEkle')));
 const AltKategoriler = Loadable(lazy(() => import('views/digerIslemler/AltKategoriListesi')));
 const AltKategoriEkle = Loadable(lazy(() => import('views/digerIslemler/AltKategoriEkle')));
+const UrunEkle = Loadable(lazy(() => import('views/digerIslemler/UrunEkle')));
+const Urunler = Loadable(lazy(() => import('views/digerIslemler/UrunListesi')));
+const UrunSatis = Loadable(lazy(() => import('views/digerIslemler/UrunSatisListesi')));
 
 // utilities routing
 const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
@@ -152,6 +155,22 @@ const MainRoutes = {
                 {
                     path: 'altKategori-duzenle/:id',
                     element: <AltKategoriEkle />
+                },
+                {
+                    path: 'urunler',
+                    element: <Urunler />
+                },
+                {
+                    path: 'urun-ekle',
+                    element: <UrunEkle />
+                },
+                {
+                    path: 'urun-duzenle/:id',
+                    element: <UrunEkle />
+                },
+                {
+                    path: 'urun-satis',
+                    element: <UrunSatis />
                 }
             ]
         }

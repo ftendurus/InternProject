@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import MaterialReactTable from 'material-react-table';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -12,6 +12,10 @@ const Example = () => {
     const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
     const navigate = useNavigate();
 
+    const [altKategoriElements, setAltKategoriElements] = useState({});
+    const [altKategoriData, setAltKategoriData] = useState([]);
+    const [altKategoriAdlari, setAltKategoriAdlari] = useState([]);
+    const [altKategoriId, setAltKategoriId] = useState([]);
     const [columnFilters, setColumnFilters] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [sorting, setSorting] = useState([]);
@@ -49,11 +53,40 @@ const Example = () => {
         keepPreviousData: true
     });
 
+    const altKategoriCek = async (id) => {
+        try {
+            const response = await axios.post(`https://localhost:7002/api/AltKategori/GetByUstKategoriId?ustKategoriId=${id}`);
+            const altKategori = response.data.data; // AltKategoriAdlari verilerini içeren dizi
+            return altKategori; // Alt kategorileri döndür
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return []; // Hata durumunda boş dizi döndür
+        }
+    };
+
+    const renderAltKategoriler = async (row) => {
+        try {
+            if (!altKategoriElements[row.original.id]) {
+                const altKategori = await altKategoriCek(row.original.id);
+                setAltKategoriElements((prevState) => ({
+                    ...prevState,
+                    [row.original.id]: altKategori
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
     const columns = useMemo(
         () => [
             {
+                accessorKey: 'id',
+                header: 'ID'
+            },
+            {
                 accessorKey: 'adi',
-                header: 'İsim'
+                header: 'Kategori Adı'
             }
         ],
         []
@@ -117,9 +150,6 @@ const Example = () => {
                 }}
                 renderRowActions={({ row }) => (
                     <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
-                        <IconButton color="primary" onClick={() => window.open('mailto:' + row.original.email)}>
-                            <EmailIcon />
-                        </IconButton>
                         <IconButton
                             color="secondary"
                             onClick={() => {
@@ -169,6 +199,38 @@ const Example = () => {
                     showAlertBanner: isError,
                     showProgressBars: isFetching,
                     sorting
+                }}
+                renderDetailPanel={({ row }) => {
+                    renderAltKategoriler(row); // renderAltKategoriler fonksiyonunu çağırın
+                    const altKategoriler = altKategoriElements[row.original.id] || [];
+
+                    return (
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                margin: 'auto',
+                                gridTemplateColumns: '1fr 1fr',
+                                width: '100%',
+                                gap: '16px'
+                            }}
+                        >
+                            <Typography variant="subtitle1">Üst Kategori Adı: {row.original.adi}</Typography>
+                            <Box>
+                                <Typography variant="h6">Alt Kategoriler</Typography>
+                                <ul>
+                                    {altKategoriler.length > 0 ? (
+                                        altKategoriler.map((altKategori) => (
+                                            <li key={altKategori.id}>
+                                                (ID: {altKategori.id}) {altKategori.adi}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <Typography variant="body2">Alt Kategori Bulunamadı.</Typography>
+                                    )}
+                                </ul>
+                            </Box>
+                        </Box>
+                    );
                 }}
             />
         </>

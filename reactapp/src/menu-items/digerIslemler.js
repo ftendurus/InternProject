@@ -1,8 +1,8 @@
 // assets
-import { IconUsers } from '@tabler/icons';
+import { IconUsers, IconBuilding, IconCategory, IconCategory2, IconShoppingCart } from '@tabler/icons';
 
 // constant
-const icons = { IconUsers };
+const icons = { IconUsers, IconBuilding, IconCategory, IconCategory2, IconShoppingCart };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -36,7 +36,7 @@ const digerIslemler = {
             id: 'firmalar',
             title: 'Firmalar',
             type: 'collapse',
-            icon: icons.IconCase,
+            icon: icons.IconBuilding,
 
             children: [
                 {
@@ -57,7 +57,7 @@ const digerIslemler = {
             id: 'ustKategori',
             title: 'Üst Kategori',
             type: 'collapse',
-            icon: icons.IconCase,
+            icon: icons.IconCategory,
 
             children: [
                 {
@@ -78,7 +78,7 @@ const digerIslemler = {
             id: 'altKategori',
             title: 'Alt Kategori',
             type: 'collapse',
-            icon: icons.IconCase,
+            icon: icons.IconCategory,
 
             children: [
                 {
@@ -92,6 +92,33 @@ const digerIslemler = {
                     title: 'Alt Kategori Ekle',
                     type: 'item',
                     url: '/digerIslemler/altKategori-ekle'
+                }
+            ]
+        },
+        {
+            id: 'urunler',
+            title: 'Ürünler',
+            type: 'collapse',
+            icon: icons.IconShoppingCart,
+
+            children: [
+                {
+                    id: 'urunler',
+                    title: 'Ürün Listesi',
+                    type: 'item',
+                    url: '/digerIslemler/urunler'
+                },
+                {
+                    id: 'urun-ekle',
+                    title: 'Ürün Ekle',
+                    type: 'item',
+                    url: '/digerIslemler/urun-ekle'
+                },
+                {
+                    id: 'urun-satis',
+                    title: 'Ürün Satis Listesi',
+                    type: 'item',
+                    url: '/digerIslemler/urun-satis'
                 }
             ]
         }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import MaterialReactTable from 'material-react-table';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -14,6 +14,7 @@ const Example = () => {
     const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
     const navigate = useNavigate();
 
+    const [urunElements, setUrunElements] = useState({});
     const [UstKategori, setUstKategori] = useState();
     const [columnFilters, setColumnFilters] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -55,8 +56,12 @@ const Example = () => {
     const columns = useMemo(
         () => [
             {
+                accessorKey: 'id',
+                header: 'ID'
+            },
+            {
                 accessorKey: 'adi',
-                header: 'İsim'
+                header: 'Kategori Adı'
             },
             {
                 accessorKey: 'ustKategoriAdi',
@@ -113,6 +118,31 @@ const Example = () => {
         });
     };
 
+    const urunCek = async (id) => {
+        try {
+            const response = await axios.post(`https://localhost:7002/api/Urun/GetByKategoriId?kategoriId=${id}`);
+            const urun = response.data.data; // AltKategoriAdlari verilerini içeren dizi
+            return urun; // Alt kategorileri döndür
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return []; // Hata durumunda boş dizi döndür
+        }
+    };
+
+    const renderUrunler = async (row) => {
+        try {
+            if (!urunElements[row.original.id]) {
+                const urun = await urunCek(row.original.id);
+                setUrunElements((prevState) => ({
+                    ...prevState,
+                    [row.original.id]: urun
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
     return (
         <>
             <MaterialReactTable
@@ -124,9 +154,6 @@ const Example = () => {
                 }}
                 renderRowActions={({ row }) => (
                     <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '8px' }}>
-                        <IconButton color="primary" onClick={() => window.open('mailto:' + row.original.email)}>
-                            <EmailIcon />
-                        </IconButton>
                         <IconButton
                             color="secondary"
                             onClick={() => {
@@ -176,6 +203,37 @@ const Example = () => {
                     showAlertBanner: isError,
                     showProgressBars: isFetching,
                     sorting
+                }}
+                renderDetailPanel={({ row }) => {
+                    renderUrunler(row); // renderAltKategoriler fonksiyonunu çağırın
+                    const urunler = urunElements[row.original.id] || [];
+
+                    return (
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                margin: 'auto',
+                                gridTemplateColumns: '1fr 1fr',
+                                width: '100%',
+                                gap: '16px'
+                            }}
+                        >
+                            <Box>
+                                <Typography variant="h6">Ürünler</Typography>
+                                <ul>
+                                    {urunler.length > 0 ? (
+                                        urunler.map((urun) => (
+                                            <li key={urun.id}>
+                                                (ID: {urun.id}), Ürün Adı: {urun.adi}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <Typography variant="body2">Ürün Bulunamadı.</Typography>
+                                    )}
+                                </ul>
+                            </Box>
+                        </Box>
+                    );
                 }}
             />
         </>

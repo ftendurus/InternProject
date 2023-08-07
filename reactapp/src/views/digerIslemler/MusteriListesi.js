@@ -78,6 +78,10 @@ const Example = () => {
     const columns = useMemo(
         () => [
             {
+                accessorKey: 'id',
+                header: 'ID'
+            },
+            {
                 accessorKey: 'adi',
                 header: 'İsim'
             },
