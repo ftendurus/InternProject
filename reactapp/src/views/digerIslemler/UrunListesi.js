@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import MaterialReactTable from 'material-react-table';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -126,7 +126,20 @@ const Example = () => {
             },
             {
                 accessorKey: 'description',
-                header: 'Açıklama'
+                header: 'Açıklama',
+                Cell: ({ row }) => (
+                    <Box sx={{ maxWidth: '200px' }}>
+                        {row.original.description.length > 15 ? (
+                            <Tooltip title={row.original.description}>
+                                <Typography variant="body2" noWrap>
+                                    {row.original.description.slice(0, 15)}...
+                                </Typography>
+                            </Tooltip>
+                        ) : (
+                            <Typography variant="body2">{row.original.description}</Typography>
+                        )}
+                    </Box>
+                )
             },
             {
                 accessorKey: 'kategoriAdi',

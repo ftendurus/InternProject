@@ -38,6 +38,7 @@ function UrunEkle() {
     const [imageSrc, setImageSrc] = useState('');
     const [value, setValue] = React.useState('1');
     const [imageName, setImageName] = useState('');
+    const [descriptionLength, setDescriptionLength] = useState(0);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -298,106 +299,6 @@ function UrunEkle() {
         });
     };
 
-    const sayfa1 = () => {
-        <>
-            <Container className="d-flex justify-content-center" maxWidth="md">
-                <Grid item xs={6}>
-                    <FormControl sx={{ m: 0, width: '50ch' }}>
-                        {isFetching && <LinearProgress className="mt-3" color="secondary" />}
-                        {(!isUpdate || !isFetching) && (
-                            <>
-                                <TextField
-                                    value={adi}
-                                    margin="normal"
-                                    id="name"
-                                    label="Ürün Adı"
-                                    variant="outlined"
-                                    onChange={(e) => setAdi(e.target.value)}
-                                />
-                                <TextField
-                                    margin="normal"
-                                    id="quantity"
-                                    label="Adet"
-                                    variant="outlined"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                />
-                                <TextField
-                                    margin="normal"
-                                    value={price}
-                                    id="price"
-                                    label="Ürün Fiyatı"
-                                    variant="outlined"
-                                    onChange={(e) => setPrice(e.target.value)}
-                                />
-                                <TextField
-                                    margin="normal"
-                                    id="description"
-                                    label="Açıklama"
-                                    variant="outlined"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    fullWidth // Bu satırı ekleyerek bileşenin tam genişlikte görüntülenmesini sağlayabilirsiniz
-                                    multiline // Bu satırı ekleyerek çok satırlı metin girişi sağlayabilirsiniz
-                                    rows={4} // İstediğiniz satır sayısını belirleyebilirsiniz
-                                />
-                                <div style={{ marginTop: '16px', marginBottom: '20px' }}>
-                                    <Select
-                                        options={selectOptions}
-                                        value={{ value: kategoriId, label: kategoriAdi }}
-                                        onChange={handleSelect}
-                                        placeholder={'Kategori seçiniz...'}
-                                        styles={customStyles}
-                                    />
-                                </div>
-                                <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-                                    <h2>Görsel Ekle:</h2>
-                                    <label
-                                        htmlFor="upload-button"
-                                        style={{
-                                            display: 'block',
-                                            marginBottom: '10px',
-                                            cursor: 'pointer',
-                                            color: '#007bff',
-                                            textDecoration: 'underline'
-                                        }}
-                                    >
-                                        {file ? (
-                                            <div>
-                                                <span>Seçili Dosya: </span>
-                                                <span style={{ fontWeight: 'bold' }}>{file.name}</span>
-                                            </div>
-                                        ) : (
-                                            <IconButton color="primary" component="span" style={{ fontWeight: 'bold' }}>
-                                                <CloudUploadIcon style={{ marginRight: '5px' }} />
-                                                Dosya Seç
-                                            </IconButton>
-                                        )}
-                                    </label>
-                                    <img src={imageSrc} alt="Seçilen Resim" style={{ maxWidth: '100%', maxHeight: '200px' }} />
-                                    <input type="file" id="upload-button" style={{ display: 'none' }} onChange={handleFileChange} />
-                                    {file && (
-                                        <div style={{ marginTop: '10px' }}>
-                                            <h3>Önizleme:</h3>
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt="Seçilen Resim"
-                                                style={{ maxWidth: '100%', maxHeight: '200px' }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                                <Button onClick={urunEkle} className="mb-2" margin="normal" variant="contained">
-                                    Kaydet
-                                </Button>
-                            </>
-                        )}
-                    </FormControl>
-                </Grid>
-            </Container>
-        </>;
-    };
-
     return (
         <div
             style={{
@@ -445,11 +346,20 @@ function UrunEkle() {
                                                     id="description"
                                                     label="Açıklama"
                                                     variant="outlined"
-                                                    onChange={(e) => setDescription(e.target.value)}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        if (value.length <= 150) {
+                                                            setDescription(value);
+                                                            setDescriptionLength(value.length);
+                                                        }
+                                                    }}
                                                     fullWidth
                                                     multiline
                                                     rows={4}
                                                 />
+                                                <p style={{ color: descriptionLength > 150 ? 'red' : 'inherit' }}>
+                                                    {descriptionLength} / 150 characters
+                                                </p>
                                                 <div style={{ marginTop: '16px', marginBottom: '20px' }}>
                                                     <Select
                                                         options={selectOptions}

@@ -19,6 +19,8 @@
         "formik": "^2.2.9",
         "framer-motion": "^6.3.16",
         "http-proxy-middleware": "^2.0.6",
+        "jspdf": "^2.5.1",
+        "jspdf-autotable": "^3.5.31",
         "material-react-table": "^1.11.3",
         "material-ui-popup-state": "^4.0.1",
         "mui-tel-input": "^3.1.3",
