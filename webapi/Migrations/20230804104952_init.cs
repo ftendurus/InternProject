@@ -114,6 +114,31 @@ namespace webapi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Urun",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Adi = table.Column<string>(type: "TEXT", nullable: false),
+                    KategoriId = table.Column<int>(type: "INTEGER", nullable: false),
+                    KategoriAdi = table.Column<string>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: false),
+                    Price = table.Column<float>(type: "REAL", nullable: false),
+                    Quantity = table.Column<int>(type: "INTEGER", nullable: false),
+                    ImageName = table.Column<string>(type: "TEXT", nullable: true),
+                    ImageSrc = table.Column<string>(type: "TEXT", nullable: true),
+                    Creator = table.Column<int>(type: "INTEGER", nullable: true),
+                    Updater = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Urun", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UstKategori",
                 columns: table => new
                 {
@@ -149,6 +174,9 @@ namespace webapi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Musteri");
+
+            migrationBuilder.DropTable(
+                name: "Urun");
 
             migrationBuilder.DropTable(
                 name: "UstKategori");

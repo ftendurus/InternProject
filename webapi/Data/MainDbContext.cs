@@ -12,6 +12,7 @@ namespace webapi.Data
         public DbSet<Firma> Firma { get; set; }
         public DbSet<UstKategori> UstKategori { get; set; }
         public DbSet<AltKategori> AltKategori { get; set; }
+        public DbSet<Urun> Urun { get; set; }
 
 
 

@@ -217,6 +217,61 @@ namespace webapi.Migrations
                     b.ToTable("Musteri");
                 });
 
+            modelBuilder.Entity("webapi.Entity.Urun", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Adi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Creator")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageSrc")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("KategoriAdi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("KategoriId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Updater")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Urun");
+                });
+
             modelBuilder.Entity("webapi.Entity.UstKategori", b =>
                 {
                     b.Property<int>("Id")

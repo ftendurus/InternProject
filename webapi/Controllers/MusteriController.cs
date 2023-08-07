@@ -113,5 +113,26 @@ namespace webapi.Controllers
             return new ApiResult<MusteriGridVM> { Data = musteriVM, Result = true };
         }
 
+        [HttpPost("GetByFirmaId")]
+        public ApiResult<List<MusteriGridVM>> GetByFirmaId(int firmaId)
+        {
+            var query = _unitOfWork.Repository<Musteri>()
+                .Where(x => x.FirmaId == firmaId)
+                .Select(x => new MusteriGridVM
+                {
+                    Id = x.Id,
+                    Adi = x.Adi,
+                    Soyadi = x.Soyadi,
+                    Email = x.Email,
+                    TelefonNumarasi = x.TelefonNumarasi,
+                    FirmaAdi = x.FirmaAdi,
+                    FirmaId = x.FirmaId
+                });
+
+            var result = query.ToList();
+
+            return new ApiResult<List<MusteriGridVM>> { Data = result, Result = true };
+        }
+
     }
 }

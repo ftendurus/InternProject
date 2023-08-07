@@ -7,6 +7,7 @@ using webapi.ViewModel.General.Grid;
 using webapi.ViewModel;
 using webapi.ViewModel.AltKategori;
 using Microsoft.EntityFrameworkCore;
+using webapi.ViewModel.Firma;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -66,7 +67,7 @@ namespace webapi.Controllers
                 return new ApiResult { Result = false, Message = "Belirtilen müşteri bulunamadı." };
             }
 
-            _unitOfWork.Repository<AltKategori>().SoftDelete(data.Id);
+            _unitOfWork.Repository<AltKategori>().Delete(data.Id);
             _unitOfWork.SaveChanges();
             return new ApiResult { Result = true };
         }
@@ -99,6 +100,41 @@ namespace webapi.Controllers
                 UstKategoriId = AltKategori.UstKategoriId
             };
             return new ApiResult<AltKategoriGridVM> { Data = AltKategoriVM, Result = true };
+        }
+
+        [HttpPost("GetComboGrid")]
+        public ApiResult<List<AltKategoriGridVM>> GetComboGrid()
+        {
+            var query = _unitOfWork.Repository<AltKategori>()
+                .Select(x => new AltKategoriGridVM
+                {
+                    Id = x.Id,
+                    Adi = x.Adi,
+                    UstKategoriId = x.UstKategoriId,
+                    UstKategoriAdi = x.UstKategoriAdi,
+                });
+
+            var result = query.ToList(); // Convert the IQueryable to a List
+
+            return new ApiResult<List<AltKategoriGridVM>> { Data = result, Result = true };
+        }
+
+        [HttpPost("GetByUstKategoriId")]
+        public ApiResult<List<AltKategoriGridVM>> GetByUstKategoriId(int ustKategoriId)
+        {
+            var query = _unitOfWork.Repository<AltKategori>()
+                .Where(x => x.UstKategoriId == ustKategoriId)
+                .Select(x => new AltKategoriGridVM
+                {
+                    Id = x.Id,
+                    Adi = x.Adi,
+                    UstKategoriId = x.UstKategoriId,
+                    UstKategoriAdi = x.UstKategoriAdi,
+                });
+
+            var result = query.ToList();
+
+            return new ApiResult<List<AltKategoriGridVM>> { Data = result, Result = true };
         }
 
     }
