@@ -7,6 +7,7 @@ using webapi.ViewModel.General.Grid;
 using webapi.ViewModel;
 using webapi.ViewModel.Musteri;
 using Microsoft.EntityFrameworkCore;
+using webapi.ViewModel.Firma;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -130,6 +131,26 @@ namespace webapi.Controllers
                 });
 
             var result = query.ToList();
+
+            return new ApiResult<List<MusteriGridVM>> { Data = result, Result = true };
+        }
+
+        [HttpPost("GetComboGrid")]
+        public ApiResult<List<MusteriGridVM>> GetComboGrid()
+        {
+            var query = _unitOfWork.Repository<Musteri>()
+                .Select(x => new MusteriGridVM
+                {
+                    Id = x.Id,
+                    Adi = x.Adi,
+                    Soyadi = x.Soyadi,
+                    Email = x.Email,
+                    TelefonNumarasi = x.TelefonNumarasi,
+                    FirmaAdi = x.FirmaAdi,
+                    FirmaId = x.FirmaId
+                });
+
+            var result = query.ToList(); // Convert the IQueryable to a List
 
             return new ApiResult<List<MusteriGridVM>> { Data = result, Result = true };
         }

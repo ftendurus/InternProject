@@ -121,6 +121,21 @@ const digerIslemler = {
                     url: '/digerIslemler/urun-satis'
                 }
             ]
+        },
+        {
+            id: 'teklifler',
+            title: 'Teklifler',
+            type: 'collapse',
+            icon: icons.IconShoppingCart,
+
+            children: [
+                {
+                    id: 'teklifler',
+                    title: 'Teklif Listesi',
+                    type: 'item',
+                    url: '/digerIslemler/teklifler'
+                }
+            ]
         }
     ]
 };

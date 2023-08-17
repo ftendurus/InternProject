@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="Images\" />
+    <Folder Include="Pdf\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

@@ -13,8 +13,9 @@ namespace webapi.Data
         public DbSet<UstKategori> UstKategori { get; set; }
         public DbSet<AltKategori> AltKategori { get; set; }
         public DbSet<Urun> Urun { get; set; }
-
-
+        public DbSet<Fiyat> Fiyat { get; set; }
+        public DbSet<TeklifUrun> TeklifUrun { get; set; }
+        public DbSet<Teklif> Teklif { get; set; }
 
 
 

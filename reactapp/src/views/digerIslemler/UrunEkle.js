@@ -14,6 +14,7 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import { DataGrid } from '@mui/x-data-grid';
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 const icons = { IconUpload };
@@ -39,6 +40,7 @@ function UrunEkle() {
     const [value, setValue] = React.useState('1');
     const [imageName, setImageName] = useState('');
     const [descriptionLength, setDescriptionLength] = useState(0);
+    const [priceData, setPriceData] = useState([]);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -77,6 +79,23 @@ function UrunEkle() {
                 error: adi + ' ' + kategoriAdi + ' eklenirken hata oluştu 🤯'
             });
             await uploadImage();
+        }
+    };
+
+    useEffect(() => {
+        if (id) {
+            fetchPriceData(id);
+        }
+    }, [id]);
+
+    const fetchPriceData = async (urunId) => {
+        try {
+            const response = await axios.post(`https://localhost:7002/api/Fiyat/GetByUrunId?urunId=${urunId}`);
+            if (response.data && response.data.result) {
+                setPriceData(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching price data:', error);
         }
     };
 
@@ -462,6 +481,40 @@ function UrunEkle() {
                                                 />
                                             </>
                                         )}
+                                    </FormControl>
+                                </Grid>
+                            </Container>
+                            <Container className="d-flex justify-content-center" maxWidth="md">
+                                <Grid item xs={12}>
+                                    <FormControl sx={{ m: 0, width: '100%' }}>
+                                        <h2>Fiyat Teklif Gecmisi</h2>
+                                        <div style={{ height: 400, width: '100%' }}>
+                                            <DataGrid
+                                                columns={[
+                                                    { field: 'id', headerName: 'ID', width: 100 },
+                                                    {
+                                                        field: 'sonFiyat',
+                                                        headerName: 'Verilen Teklif(TL)',
+                                                        width: 200,
+                                                        valueFormatter: ({ value }) => {
+                                                            return Number(value).toLocaleString('tr-TR', {
+                                                                style: 'currency',
+                                                                currency: 'TRY',
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2
+                                                            });
+                                                        }
+                                                    }
+                                                ]}
+                                                rows={priceData}
+                                                sortModel={[
+                                                    {
+                                                        field: 'id',
+                                                        sort: 'desc' // 'desc' for descending, 'asc' for ascending
+                                                    }
+                                                ]}
+                                            />
+                                        </div>
                                     </FormControl>
                                 </Grid>
                             </Container>

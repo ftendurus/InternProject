@@ -23,6 +23,8 @@ import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import Select from 'react-select';
+import { InputAdornment } from '@mui/material';
 
 const Example = () => {
     const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
@@ -31,26 +33,28 @@ const Example = () => {
 
     const [id, setId] = useState([]);
 
+    const [firmaAdi, setFirmaAdi] = useState('');
+    const [firma, setFirma] = useState(0);
+    const [musteriAdi, setMusteriAdi] = useState('');
+    const [musteri, setMusteri] = useState(0);
+    const [musteriSoyadi, setMusteriSoyadi] = useState('');
+    const [musteriTel, setMusteriTel] = useState(0);
+    const [musteriMail, setMusteriMail] = useState(0);
+    const [optionsFirma, setOptionsFirma] = useState([]);
+    const [optionsMusteri, setOptionsMusteri] = useState([]);
+    const [calistir, setCalistir] = useState(0);
+    const [priceMap, setPriceMap] = useState({});
     const [productAddedMap, setProductAddedMap] = useState({});
     const [quantityMap, setQuantityMap] = useState({});
     const [value, setValue] = React.useState('1');
     const [cartList, setCartList] = useState([]);
     const [products, setProducts] = useState([]);
-    const [altKategoriData, setAltKategoriData] = useState([]);
-    const [description, setDescription] = useState();
-    const [price, setPrice] = useState();
-    const [kategoriAdi, setKategoriAdi] = useState();
-    const [quantity, setQuantity] = useState();
-    const [adet, setAdet] = useState();
-    const [imageName, setImageName] = useState();
-    const [imageSrc, setImageSrc] = useState();
-    const [columnFilters, setColumnFilters] = useState([]);
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [sorting, setSorting] = useState([]);
-    const [pagination, setPagination] = useState({
-        pageIndex: 0,
-        pageSize: 10
-    });
+    const [urunFiyat, setUrunFiyat] = useState();
+    const [validationErrors, setValidationErrors] = React.useState({});
+    const [teklifId, setTeklifId] = useState();
+    const [gecerlilik, setGecerlilik] = useState(1);
+    const [tarih, setTarih] = useState('');
+    const [cartIds, setCartIds] = useState([]); // Sepetteki ürün id'leri
 
     const { data, isError, isFetching, isLoading, refetch } = useQuery({
         queryKey: ['table-data'],
@@ -78,10 +82,12 @@ const Example = () => {
                 });
             console.log(responseData);
             setProducts(responseData);
+            setCalistir(calistir + 1);
             return responseData;
         },
-        enabled: false,
-        keepPreviousData: true
+        enabled: true,
+        keepPreviousData: true,
+        refetchOnWindowFocus: false
     });
 
     useEffect(() => {
@@ -100,70 +106,122 @@ const Example = () => {
         }));
     };
 
-    const calculateTotalPrice = () => {
-        return cartList.reduce((total, product) => total + product.price * quantityMap[product.id], 0);
+    const selectMusteri = async (firma) => {
+        try {
+            const response = await axios.post(`https://localhost:7002/api/Musteri/GetByFirmaId?firmaId=${firma}`);
+            if (response.data && response.data.result) {
+                setOptionsMusteri(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
     };
 
-    useEffect(() => {
-        altKategoriCek();
-        if (!data) {
-            refetch();
+    const selectFirma = async () => {
+        try {
+            const response = await axios.post('https://localhost:7002/api/Firma/GetComboGrid');
+            if (response.data && response.data.result) {
+                setOptionsFirma(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
         }
-    }, []);
+    };
+
+    const selectOptionsMusteri = optionsMusteri.map((option) => ({
+        value: option.id,
+        label: option.adi
+    }));
+
+    const selectOptionsFirma = optionsFirma.map((option) => ({
+        value: option.id,
+        label: option.adi
+    }));
+
+    function handleSelectMusteri(event) {
+        setMusteri(event.value);
+        setMusteriAdi(optionsMusteri.find((option) => option.id == event.value).adi);
+        setMusteriSoyadi(optionsMusteri.find((option) => option.id == event.value).soyadi);
+        setMusteriTel(optionsMusteri.find((option) => option.id == event.value).telefonNumarasi);
+        setMusteriMail(optionsMusteri.find((option) => option.id == event.value).email);
+    }
+
+    function handleSelectFirma(event) {
+        setFirma(event.value);
+        setFirmaAdi(optionsFirma.find((option) => option.id == event.value).adi);
+        selectMusteri(event.value);
+    }
+
+    const handlePriceChange = (productId, newPrice) => {
+        setPriceMap((prevPriceMap) => ({
+            ...prevPriceMap,
+            [productId]: newPrice
+        }));
+    };
+
+    const calculateTotalPrice = () => {
+        return cartList.reduce((total, product) => total + (priceMap[product.id] || product.price) * (quantityMap[product.id] || 1), 0);
+    };
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
 
     useEffect(() => {
-        if (!data) {
-            refetch();
-        }
-        fetchAndSetImagesForProducts();
-    }, [data]);
+        const timeoutId = setTimeout(() => {
+            fetchAndSetImagesForProducts();
+            selectFirma();
+        }, 1000);
 
-    const altKategoriCek = async () => {
-        try {
-            const response = await axios.post('https://localhost:7002/api/AltKategori/GetComboGrid/');
-            const altKategoriler = response.data.data; // Firma verilerini içeren dizi
-            // Firma adlarını içeren bir dizi oluşturmak için map fonksiyonu kullanılıyor
-            const altKategoriAdlari = altKategoriler.map((firma) => firma.adi);
-            setAltKategoriData(altKategoriAdlari); // Firma adlarını içeren diziyi state'e kaydediyoruz
-            console.log(altKategoriAdlari);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
+        return () => {
+            clearTimeout(timeoutId);
+        };
+    }, [calistir]); // products dizisine bağımlılığı ekleyin
 
     const getImage = async (imageName) => {
         try {
             const response = await axios.get(`https://localhost:7002/api/Urun/GetImage?imageName=${imageName}`, {
-                responseType: 'blob' // Binary olarak cevap alıyoruz
+                responseType: 'blob'
             });
 
-            // Eğer istediğiniz gibi kullanmak isterseniz, dönen blob verisini kullanabilirsiniz
             const blob = response.data;
-            // Örnek olarak blob'u bir <img> etiketi içerisinde görüntülemek için aşağıdaki gibi kullanabilirsiniz
-            // const imageUrl = URL.createObjectURL(blob);
-            // <img src={imageUrl} alt="Resim" />
-
             return blob;
         } catch (error) {
-            console.error('Image fetching error:', error);
-            throw error;
+            console.error('Error fetching image:', error);
+            throw error; // Hata oluştuğunda hatayı yukarıya fırlat
         }
     };
 
     const fetchAndSetImagesForProducts = async () => {
-        const updatedProducts = await Promise.all(
-            products.map(async (product) => {
-                const blob = await getImage(product.imageName);
-                const imageUrl = URL.createObjectURL(blob);
-                console.log('Fetched image for', product.imageName, 'Image blob:', blob);
-                return { ...product, imageUrl };
-            })
-        );
-        setProducts(updatedProducts);
+        console.log('urunler', products);
+        try {
+            const updatedProducts = await Promise.all(
+                products.map(async (product) => {
+                    try {
+                        const blob = await getImage(product.imageName);
+                        const imageUrl = URL.createObjectURL(blob);
+                        console.log('Fetched image for', product.imageName, 'Image blob:', blob);
+                        return { ...product, imageUrl };
+                    } catch (error) {
+                        console.error('Error fetching image for', product.imageName, error);
+                        return product;
+                    }
+                })
+            );
+            // products dizisini güncelle
+            setProducts(updatedProducts);
+        } catch (error) {
+            console.error('Error fetching images:', error);
+        }
+    };
+
+    const teklifVer = async () => {
+        console.log(musteri + musteriAdi + firma + firmaAdi + gecerlilik + tarih);
+        await fiyatEkle();
+        await teklifEkle();
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        await fetchLastAddedTeklif();
+        console.log('teklif' + teklifId);
     };
 
     const deleteById = (id) => {
@@ -213,6 +271,242 @@ const Example = () => {
         });
     };
 
+    const fiyatEkle = async () => {
+        if (typeof id !== 'undefined') {
+            toast.promise(fiyatEklePromise, {
+                pending: 'Fiyat güncelleniyor',
+                success: 'Fiyat başarıyla güncellendi 👌',
+                error: 'Fiyat güncellenirken hata oluştu 🤯'
+            });
+        } else {
+            toast.promise(fiyatEklePromise, {
+                pending: 'Fiyat kaydı yapılıyor',
+                success: 'Fiyat başarıyla eklendi 👌',
+                error: 'Fiyat eklenirken hata oluştu 🤯'
+            });
+        }
+    };
+
+    const fiyatEklePromise = () => {
+        return new Promise(async (resolve, reject) => {
+            const start = Date.now();
+            console.log(cartList);
+            cartList.map(async (product) => {
+                setValidationErrors({});
+                let data = JSON.stringify({
+                    id: 0,
+                    urunId: product.id,
+                    sonFiyat: priceMap[product.id] || product.price
+                });
+
+                let config = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: 'http://localhost:5273/api/Fiyat/CreateOrUpdate',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'text/plain'
+                    },
+                    data: data
+                };
+
+                axios
+                    .request(config)
+                    .then(async (response) => {
+                        console.log(JSON.stringify(response.data));
+                        if (response.data.result) {
+                            const millis = Date.now() - start;
+                            if (millis < 700) {
+                                await sleep(700 - millis);
+                            }
+                            resolve(response.data); // Başarılı sonuç durumunda Promise'ı çöz
+                        } else {
+                            reject(new Error('İşlem başarısız')); // Başarısız sonuç durumunda Promise'ı reddet
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        setValidationErrors(error.response.data.errors);
+                        reject(error); // Hata durumunda Promise'ı reddet
+                    });
+            });
+        });
+    };
+
+    const teklifEkle = async () => {
+        if (typeof id !== 'undefined') {
+            toast.promise(teklifEklePromise, {
+                pending: 'Müşteri güncelleniyor',
+                success: 'Teklif başarıyla güncellendi 👌',
+                error: ' Teklif güncellenirken hata oluştu 🤯'
+            });
+        } else {
+            toast.promise(teklifEklePromise, {
+                pending: 'Müşteri kaydı yapılıyor',
+                success: ' Teklif başarıyla eklendi 👌',
+                error: ' Teklif eklenirken hata oluştu 🤯'
+            });
+        }
+    };
+
+    const teklifEklePromise = () => {
+        return new Promise(async (resolve, reject) => {
+            const start = Date.now();
+            const currentDate = new Date(); // Şu anki tarihi al
+            const ayar = { day: 'numeric', month: 'numeric', year: 'numeric' };
+            const formattedDate = currentDate.toLocaleDateString('tr-TR', ayar); // Tarihi uygun formata çevir
+            setValidationErrors({});
+            let data = JSON.stringify({
+                musteriId: musteri,
+                musteriAdi: musteriAdi,
+                firmaId: firma,
+                firmaAdi: firmaAdi,
+                tarih: formattedDate,
+                gecerlilikSuresi: gecerlilik,
+                teklifDurumu: 'Oluşturuldu'
+            });
+
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: 'http://localhost:5273/api/Teklif/CreateOrUpdate',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'text/plain'
+                },
+                data: data
+            };
+
+            axios
+                .request(config)
+                .then(async (response) => {
+                    console.log(JSON.stringify(response.data));
+                    if (response.data.result) {
+                        const millis = Date.now() - start;
+                        if (millis < 700) {
+                            await sleep(700 - millis);
+                        }
+                        setTeklifId(response.data.id);
+                        resolve(response.data); // Başarılı sonuç durumunda Promise'ı çöz
+                    } else {
+                        reject(new Error('İşlem başarısız')); // Başarısız sonuç durumunda Promise'ı reddet
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                    setValidationErrors(error.response.data.errors);
+                    reject(error); // Hata durumunda Promise'ı reddet
+                });
+        });
+    };
+
+    const fetchLastAddedTeklif = async () => {
+        try {
+            const response = await axios.get('http://localhost:5273/api/Teklif/GetLastAdded');
+            if (response.data.result) {
+                const lastAddedTeklif = response.data.data;
+
+                // Kullanılabilir şekilde lastAddedTeklif nesnesini kullanabilirsiniz
+                setTeklifId(lastAddedTeklif.id);
+                console.log('deneme' + lastAddedTeklif.id);
+                if (lastAddedTeklif.id !== 'undefined' || lastAddedTeklif.id !== 0) {
+                    teklifUrunEkle(lastAddedTeklif.id);
+                    exportCartToPDF(lastAddedTeklif.id);
+                } else {
+                    teklifUrunEkle(1);
+                    exportCartToPDF(1);
+                }
+
+                // Diğer işlemler
+            } else {
+                console.log('Failed to fetch last added Teklif.');
+            }
+        } catch (error) {
+            console.error('An error occurred:', error);
+        }
+    };
+
+    const teklifUrunEkle = async (id) => {
+        if (typeof id !== 'undefined') {
+            toast.promise(teklifUrunEklePromise(id), {
+                pending: 'Müşteri güncelleniyor',
+                success: 'Teklif Urun başarıyla güncellendi 👌',
+                error: 'TeklifUrun güncellenirken hata oluştu 🤯'
+            });
+        } else {
+            toast.promise(teklifUrunEklePromise, {
+                pending: 'Müşteri kaydı yapılıyor',
+                success: 'TeklifUrun başarıyla eklendi 👌',
+                error: 'TeklifUrun eklenirken hata oluştu 🤯'
+            });
+        }
+    };
+
+    const teklifUrunEklePromise = (id) => {
+        return new Promise(async (resolve, reject) => {
+            const start = Date.now();
+            console.log(cartList);
+            setTeklifId(id);
+            cartList.map(async (product) => {
+                setValidationErrors({});
+                let data = JSON.stringify({
+                    teklifId: id,
+                    urunId: product.id,
+                    fiyat: priceMap[product.id] || product.price
+                });
+
+                let config = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: 'http://localhost:5273/api/TeklifUrun/CreateOrUpdate',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'text/plain'
+                    },
+                    data: data
+                };
+
+                axios
+                    .request(config)
+                    .then(async (response) => {
+                        console.log(JSON.stringify(response.data));
+                        if (response.data.result) {
+                            const millis = Date.now() - start;
+                            if (millis < 700) {
+                                await sleep(700 - millis);
+                            }
+                            resolve(response.data); // Başarılı sonuç durumunda Promise'ı çöz
+                        } else {
+                            reject(new Error('İşlem başarısız')); // Başarısız sonuç durumunda Promise'ı reddet
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        setValidationErrors(error.response.data.errors);
+                        reject(error); // Hata durumunda Promise'ı reddet
+                    });
+            });
+        });
+    };
+
+    useEffect(() => {
+        // localStorage'dan sepete eklenen ürün id'lerini al
+        const storedCartIds = localStorage.getItem('cartIds');
+        if (storedCartIds) {
+            setCartIds(JSON.parse(storedCartIds));
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('cartIds', JSON.stringify(cartIds));
+    }, [cartIds]);
+
+    useEffect(() => {
+        // Sepetteki ürünleri al ve cartList'i güncelle
+        const cartProducts = products.filter((product) => cartIds.includes(product.id));
+        setCartList(cartProducts);
+    }, [products, cartIds]);
+
     const addToCart = (product) => {
         // Check if the product is already added to the cart
         if (productAddedMap[product.id]) {
@@ -225,6 +519,7 @@ const Example = () => {
             [product.id]: true
         }));
 
+        setCartIds((prevCartIds) => [...prevCartIds, product.id]);
         // Add the product to the cart
         setCartList((prevCartList) => [...prevCartList, product]);
     };
@@ -238,20 +533,21 @@ const Example = () => {
             ...prevMap,
             [productId]: false
         }));
+        setCartIds((prevCartIds) => prevCartIds.filter((id) => id !== productId));
     };
 
-    const exportCartToPDF = () => {
+    const exportCartToPDF = (id) => {
         const pdf = new jsPDF();
 
-        const headers = [['ID', 'Ürün Adi', 'Kategori', 'Adet', 'Birim Fiyat', 'Toplam Fiyat']];
+        const headers = [['ID', 'Ürün Adi', 'Kategori', 'Adet', 'Teklif Birim Fiyati', 'Ürün Toplam Fiyat']];
         const data = cartList.map((product) => {
             return [
                 product.id,
                 product.adi,
                 product.kategoriAdi,
                 quantityMap[product.id] || 1,
-                `${product.price.toFixed(2)} TL`,
-                `${(product.price * (quantityMap[product.id] || 1)).toFixed(2)} TL`
+                `${priceMap[product.id] || product.price} TL`,
+                `${(priceMap[product.id] * (quantityMap[product.id] || 1) || product.price * (quantityMap[product.id] || 1)).toFixed(2)} TL`
             ];
         });
 
@@ -269,73 +565,73 @@ const Example = () => {
             }
         });
 
+        const customerDetails = [
+            `Müsteri Adi: ${musteriAdi}`,
+            `Müsteri Soyadi: ${musteriSoyadi}`,
+            `Telefon: ${musteriTel}`,
+            `E-posta: ${musteriMail}`
+        ];
+
         const total = calculateTotalPrice().toFixed(2);
-        const totalText = `Toplam Fiyat: ${total} TL`;
+        const totalText = `${firmaAdi} icin Ana Toplam Fiyat: ${total} TL`;
         const textWidth = (pdf.getStringUnitWidth(totalText) * pdf.internal.getFontSize()) / pdf.internal.scaleFactor;
         pdf.setTextColor(0);
         pdf.setFontSize(12);
         pdf.text(totalText, textWidth, pdf.autoTable.previous.finalY + 15);
 
-        pdf.save('cart.pdf');
+        pdf.text(customerDetails.join('\n'), 10, pdf.autoTable.previous.finalY + 25);
+
+        pdf.save(`${firmaAdi}-${musteriAdi}-${id}.pdf`);
+
+        const formData = new FormData();
+        formData.append('file', new Blob([pdf.output('blob')], { type: 'application/pdf' }), `${firmaAdi}-${musteriAdi}-${id}.pdf`);
+
+        axios
+            .post('http://localhost:5273/api/Teklif/SavePDF', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then((response) => {
+                console.log('PDF dosyası başarıyla yüklendi:', response.data.path);
+            })
+            .catch((error) => {
+                console.error('PDF yükleme hatası:', error);
+            });
     };
 
-    const Productlist = () => {
-        <Grid container spacing={2}>
-            {' '}
-            {/* Use Grid container with spacing */}
-            {products.map((product) => (
-                <Grid item xs={6} sm={3} md={2} key={product.id}>
-                    {' '}
-                    {/* Set column widths for different screen sizes */}
-                    <Card
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            height: '100%',
-                            maxWidth: '400px', // Set a maximum width for the card
-                            marginBottom: '1rem',
-                            border: '1px solid #e0e0e0'
-                        }}
-                    >
-                        <CardMedia
-                            component="img"
-                            alt={product.adi}
-                            sx={{
-                                width: '100%',
-                                maxHeight: '200px',
-                                objectFit: 'cover',
-                                border: '1px solid #e0e0e0'
-                            }}
-                            image={product.imageUrl}
-                            loading="lazy"
-                        />
-                        <CardContent sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                            <Box sx={{ flex: 1 }}>
-                                <Typography variant="h2">Ürün Adı: {product.adi}</Typography>
-                                <Typography variant="body1" sx={{ overflow: 'auto', maxHeight: '100px' }}>
-                                    Ürün Açıklaması: {product.description}
-                                </Typography>
-                                <Typography variant="body1">Fiyat: {product.price}₺</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <TextField
-                                    label="Quantity"
-                                    type="number"
-                                    InputProps={{ inputProps: { min: 1 } }}
-                                    variant="outlined"
-                                    size="small"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                />
-                                <IconButton color="primary" onClick={() => addToCart(product)}>
-                                    <AddToCartIcon />
-                                </IconButton>
-                            </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            ))}
-        </Grid>;
+    const customStyles = {
+        control: (provided, state) => ({
+            ...provided,
+            borderRadius: '12px', // Yuvarlak kenarları
+            minHeight: '50px', // Daha uzun alan
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            // Gölge efekti
+            borderColor: state.isFocused ? '#007bff' : '#d4d4d4', // Kenarlık rengi
+            ':hover': {
+                borderColor: state.isFocused ? '#007bff' : '#d4d4d4' // Seçim alanına gelindiğinde kenarlık rengi
+            }
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            borderRadius: '12px', // Yuvarlak kenarları
+            padding: '12px', // Daha uzun alan
+            color: state.isSelected ? 'white' : 'black', // Seçili seçeneklerin metnini beyaz yapar
+            backgroundColor: state.isSelected ? '#007bff' : 'white', // Seçili seçeneklerin arkaplan rengini mavi yapar
+            ':hover': {
+                backgroundColor: state.isSelected ? '#007bff' : '#f0f0f0' // Seçili olmayan seçeneklerin üzerine gelindiğinde arkaplan rengi
+            }
+        }),
+        dropdownIndicator: (provided) => ({
+            ...provided,
+            color: '#007bff', // Seçme oku rengi
+            ':hover': {
+                color: '#007bff' // Seçme okuna gelindiğinde rengi
+            }
+        }),
+        indicatorSeparator: () => ({
+            display: 'none' // Seçme oku ayırıcısını gizler
+        })
     };
 
     return (
@@ -372,14 +668,11 @@ const Example = () => {
                     <TabPanel value="1">
                         <Grid container spacing={2}>
                             {products.map((product) => (
-                                <Grid item xs={6} sm={3} md={2} key={product.id}>
+                                <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
                                     <Card
                                         sx={{
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            height: '100%',
-                                            maxWidth: '400px',
-                                            marginBottom: '1rem',
                                             border: '1px solid #e0e0e0'
                                         }}
                                     >
@@ -388,7 +681,7 @@ const Example = () => {
                                             alt={product.adi}
                                             sx={{
                                                 width: '100%',
-                                                maxHeight: '200px',
+                                                height: '150px',
                                                 objectFit: 'cover',
                                                 border: '1px solid #e0e0e0'
                                             }}
@@ -397,15 +690,19 @@ const Example = () => {
                                         />
                                         <CardContent sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                                             <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                                                <Typography variant="h2">{product.adi}</Typography>
+                                                <Typography variant="h2" sx={{ paddingBottom: '15px', paddingTop: '10px' }}>
+                                                    {product.adi}
+                                                </Typography>
                                                 <Typography variant="body1">Kategori: {product.kategoriAdi}</Typography>
-                                                <Typography variant="body1">Fiyat: {product.price}₺</Typography>
+                                                <Typography variant="body1">
+                                                    Fiyat: {Number(product.price).toLocaleString('tr-TR')}₺
+                                                </Typography>
                                             </Box>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2 }}>
                                                 <IconButton
                                                     color="primary"
                                                     onClick={() => addToCart(product)}
-                                                    disabled={productAddedMap[product.id]} // Disable the button if already added
+                                                    disabled={cartIds.includes(product.id)}
                                                 >
                                                     <AddToCartIcon /> Sepete Ekle
                                                 </IconButton>
@@ -421,56 +718,131 @@ const Example = () => {
                             {cartList.length === 0 ? (
                                 <p>Sepette görüntülenecek ürün yok.</p>
                             ) : (
-                                <div>
+                                <Grid container spacing={2}>
                                     {cartList.map((product, index) => (
-                                        <Card
-                                            key={index}
-                                            sx={{ marginBottom: '1rem', padding: '1rem', display: 'flex', alignItems: 'center' }}
-                                        >
-                                            <CardMedia
-                                                component="img"
-                                                alt={product.adi}
-                                                sx={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '1rem' }}
-                                                image={product.imageUrl}
-                                            />
-                                            <div>
-                                                <Typography variant="h5">{product.adi}</Typography>
-                                                <Typography variant="body1">Kategori: {product.kategoriAdi}</Typography>
-                                                <Typography variant="body1">Price: {product.price * quantityMap[product.id]}₺</Typography>
-                                                <FormControl variant="outlined" size="small" sx={{ marginTop: '0.5rem' }}>
+                                        <Grid item xs={12} sm={6} md={4} key={index}>
+                                            <Card
+                                                sx={{
+                                                    marginBottom: '1rem',
+                                                    border: '1px solid #e0e0e0',
+                                                    display: 'flex',
+                                                    flexDirection: 'column'
+                                                }}
+                                            >
+                                                <CardMedia
+                                                    component="img"
+                                                    alt={product.adi}
+                                                    sx={{ height: '150px', objectFit: 'cover' }}
+                                                    image={product.imageUrl}
+                                                />
+                                                <CardContent sx={{ flexGrow: 1 }}>
+                                                    <Typography variant="h5">{product.adi}</Typography>
+                                                    <Typography variant="body1">Kategori: {product.kategoriAdi}</Typography>
+                                                    <Typography variant="body1">
+                                                        Ana Fiyat:{' '}
+                                                        {new Intl.NumberFormat('tr-TR', {
+                                                            style: 'currency',
+                                                            currency: 'TRY',
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                        }).format(Number(product.price * (quantityMap[product.id] || 1)))}
+                                                    </Typography>
+                                                    <FormControl variant="outlined" size="small" sx={{ marginTop: '0.5rem', width: '13%' }}>
+                                                        <TextField
+                                                            label="Adet"
+                                                            type="number"
+                                                            InputProps={{ inputProps: { min: 1 } }}
+                                                            value={quantityMap[product.id] || 1}
+                                                            onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                                                        />
+                                                    </FormControl>
+                                                    <Box sx={{ marginTop: '0.8rem' }}>
+                                                        <TextField
+                                                            label="Fiyat"
+                                                            type="number"
+                                                            value={priceMap[product.id] || product.price}
+                                                            onChange={(e) => handlePriceChange(product.id, e.target.value)}
+                                                            InputProps={{
+                                                                inputProps: {
+                                                                    min: 0,
+                                                                    step: 'any'
+                                                                },
+                                                                startAdornment: <InputAdornment position="start">₺</InputAdornment>,
+                                                                inputMode: 'decimal'
+                                                            }}
+                                                            sx={{ width: '30%' }}
+                                                            variant="outlined"
+                                                            size="small"
+                                                        />
+                                                    </Box>
+                                                    <Typography variant="body1">
+                                                        Pazarlıklı Fiyat:{' '}
+                                                        {new Intl.NumberFormat('tr-TR', {
+                                                            style: 'currency',
+                                                            currency: 'TRY',
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                        }).format(
+                                                            Number((priceMap[product.id] || product.price) * (quantityMap[product.id] || 1))
+                                                        )}
+                                                    </Typography>
+                                                    <IconButton
+                                                        color="secondary"
+                                                        onClick={() => removeFromCart(product.id)}
+                                                        sx={{ marginTop: '0.5rem', alignSelf: 'flex-end' }}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                    <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                                        <Typography variant="h6">
+                                            Son Fiyat:{' '}
+                                            {new Intl.NumberFormat('tr-TR', {
+                                                style: 'currency',
+                                                currency: 'TRY',
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            }).format(calculateTotalPrice().toFixed(2))}
+                                        </Typography>
+                                        <div>
+                                            <Box>
+                                                <div style={{ marginTop: '16px', marginBottom: '20px' }}>
                                                     <TextField
-                                                        label="Adet"
+                                                        label="Geçerlilik Süresi (Gün)"
                                                         type="number"
                                                         InputProps={{ inputProps: { min: 1 } }}
-                                                        value={quantityMap[product.id] || 1}
-                                                        onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                                                        value={gecerlilik}
+                                                        onChange={(e) => setGecerlilik(e.target.value)}
                                                     />
-                                                </FormControl>
-                                                <IconButton
-                                                    color="secondary"
-                                                    onClick={() => removeFromCart(product.id)}
-                                                    sx={{ marginTop: '0.5rem' }}
-                                                >
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                    <div>
-                                        <Typography variant="h6">Toplam Fiyat: {calculateTotalPrice()}₺</Typography>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={exportCartToPDF}
-                                            sx={{ marginTop: '1rem', marginRight: '1rem' }}
-                                        >
-                                            PDF İndir
-                                        </Button>
-                                        <Button variant="contained" color="primary" sx={{ marginTop: '1rem' }}>
-                                            Checkout
-                                        </Button>
-                                    </div>
-                                </div>
+                                                </div>
+                                                <div style={{ marginTop: '16px', marginBottom: '20px' }}>
+                                                    <Select
+                                                        options={selectOptionsFirma}
+                                                        defaultValue={firma}
+                                                        onChange={handleSelectFirma}
+                                                        placeholder={'Firma seciniz...'}
+                                                        styles={customStyles}
+                                                    />
+                                                </div>
+                                                <div style={{ marginTop: '16px', marginBottom: '20px' }}>
+                                                    <Select
+                                                        options={selectOptionsMusteri}
+                                                        defaultValue={musteri}
+                                                        onChange={handleSelectMusteri}
+                                                        placeholder={'Müşteri seciniz...'}
+                                                        styles={customStyles}
+                                                    />
+                                                </div>
+                                            </Box>
+                                            <Button variant="contained" color="primary" onClick={teklifVer}>
+                                                Teklif Ver
+                                            </Button>
+                                        </div>
+                                    </Grid>
+                                </Grid>
                             )}
                         </div>
                     </TabPanel>
